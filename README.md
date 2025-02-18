@@ -1,7 +1,7 @@
 # ESP32-C3-BLEMouse
 using ESP32 C3 super mini dev board to jiggle mouse on a PC and also page turner for pdf on tablet
 
-Challenges:
+## Challenges:
 1. Need extra hand to turn the PDF page on a table/computer while playing a musical instrument
 2. need a mouse jiggle to keep my status as "green"
 
@@ -12,8 +12,16 @@ in the example code, i'm:
      a. Scroll page up OR start mouse jiggling
      b. Scroll page down OR stop mouse jiggling
      c. Switch between these 2 modes: Mouse Jiggling and Mouse Scroll
+3. I have few LEDs connected to each switches to indicates there's a HIGH when it's pressed.
 
-# Sample Code
+## Installation
+- (Make sure you can use the ESP32 with the Arduino IDE. [Instructions can be found here.](https://github.com/espressif/arduino-esp32#installation-instructions))
+- [Download the latest release of this library from the release page.](https://github.com/T-vK/ESP32-BLE-Mouse/releases)
+- In the Arduino IDE go to "Sketch" -> "Include Library" -> "Add .ZIP Library..." and select the file you just downloaded.
+- You can now go to "File" -> "Examples" -> "ESP32 BLE Mouse" and select any of the examples to get started.
+
+## Sample Code
+``` C++
 #include <BleMouse.h>
 
 /***
@@ -86,3 +94,4 @@ void loop() {
     delay(1000);
   }
 }
+```
