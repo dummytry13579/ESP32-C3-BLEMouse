@@ -24,27 +24,12 @@ in the example code, i'm:
 ``` C++
 #include <BleMouse.h>
 
-/***
-ver
-150125  - Initial version
-        - able to connect via BT on ESP32 C3 supermini
-        - Swtich 2 as stop; Switch 10 (C3 supermini) as start
-        - random coordinate for the mouse to move across the screen
-280125  - add in Random delay for each coordinate
-100225  - Copied from sk_BTMouse_Jiggler280125
-        - adding in mouse scroll. instead of using keyboard to turn page
-130225  - final version for ESP32 where change mode pin will toggle between jigler and page turn
-        - next version will have web server embedded
-***/
-
-
 // Initialize the BLE Mouse library
 BleMouse bleMouse("Logi JS3");
 
 // Define the GPIO pin for the switch
-#define STOPM_SW 2
-//#define START_SW 16 //for WROOM
-#define START_SW 10
+#define STOPM_SW 2  //Stop jiggling/scroll down
+#define START_SW 10  //Start jiggling/scroll up
 #define MODECHG_SW 4  //change mode between Jiggler/Scroll
 #define LEDMODEPIN 6
 #define LEDRIGHTPIN 7
@@ -69,8 +54,8 @@ void setup() {
   bleMouse.begin();
   Serial.println("BLE Mouse initialized and ready.");
 
-  stopFlag = false;
-  jiggFlag = false; //default set to scroll
+  stopFlag = false; //default set to start jiggling
+  jiggFlag = false; //default set to scroll (false); jiggle (true)
 
 }
 
@@ -89,6 +74,66 @@ void loop() {
         digitalWrite(LEDLEFTPIN, LOW);
         delay(500);
       }
+
+      if(digitalRead(STOPM_SW)==LOW){
+        digitalWrite(LEDRIGHTPIN, HIGH);
+        Serial.println("Scroll up");
+        for(int i = 0; i<10; i++){
+          bleMouse.move(0,0,-1);
+          delay(100);
+        }
+        digitalWrite(LEDRIGHTPIN, LOW);
+        delay(500);
+      }
+
+      if(digitalRead(MODECHG_SW) == LOW){
+          digitalWrite(LEDMODEPIN, LOW);
+          jiggFlag = true;
+          stopFlag=false; //auto run
+          delay(200);
+      }
+      delay(100);
+    } else {                //jiggflag=true - jiggler
+      digitalWrite(LEDMODEPIN, LOW);
+        if(stopFlag==false){  //random jiggling
+            if (digitalRead(STOPM_SW) == HIGH) {
+            int x = random(-50, 51); // Random movement in X direction
+            int y = random(-50, 51); // Random movement in Y direction
+            int ranDly = random(100,5000);
+            Serial.printf("Moving mouse: X=%d, Y=%d\n", x, y);
+
+            // Move the mouse cursor
+            bleMouse.move(x, y);
+
+            // Delay to make the movements noticeable
+            //delay(800);
+            digitalWrite(LEDRIGHTPIN, HIGH);
+            digitalWrite(LEDLEFTPIN, HIGH);
+            delay(ranDly);
+            //digitalWrite(LEDRIGHTPIN, LOW);
+            //digitalWrite(LEDLEFTPIN, LOW);
+          } else {
+            // Switch pressed: Stop mouse movement
+            Serial.println("Switch pressed: Stopping mouse movement.");
+            digitalWrite(LEDRIGHTPIN, LOW);
+            digitalWrite(LEDLEFTPIN, LOW);
+            delay(500); // Debounce delay
+            stopFlag = true;
+          }
+        }
+        if (digitalRead(START_SW) == LOW){
+          stopFlag = false;
+          delay(200);
+        }
+        if(digitalRead(MODECHG_SW) == LOW){
+          digitalWrite(LEDMODEPIN, HIGH);
+          delay(300);
+          jiggFlag = false;
+        }
+        delay(100);
+    }
+  
+  
   } else {
     Serial.println("Waiting for Bluetooth connection...");
     delay(1000);
